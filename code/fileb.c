@@ -1,0 +1,1 @@
+#define BITMACRO(x) (1<<(x))
