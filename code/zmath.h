@@ -236,6 +236,7 @@ char* PRINT_R2(const r2 a);
 #define B2(X)	((u32)3<<(X*2))
 #define B4(X)	((u32)15<<(X*4))
 #define B8(X)	((u32)UINT8_MAX<<(X*8))
+#define B8_64(X) ((u64)UINT8_MAX<<(X*8))
 #define B16(X)	((u32)UINT16_MAX<<(X*16))
 
 
@@ -263,6 +264,8 @@ char* PRINT_R2(const r2 a);
 	void SET8IN16( u8 source, u16* destination,  int pos);
 
 	void SET8IN32( u8 source, u32* destination,  int pos);
+
+	void SET8IN64( u8 source, u64* destination,  int pos);
 
 	void SET4IN8( u8 source, u8* destination,  int pos);
 

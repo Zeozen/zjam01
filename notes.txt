@@ -1,0 +1,32 @@
+theme: Entire Game On One Screen
+
+implications tolkning A:
+	no main menu -> playing a level
+	no levelloading
+	no scrolling
+	
+ideas: 
+morphing GUI screen
+
+text adventure
+
+minesweeper
+snake
+tetris
+pong
+in other words arcade classics
+
+	
+	
+	
+	
+	
+prosess:
+idégenerering
+tolke tema: hva er implikasjoner, avgrensninger?
+deretter skrive og tegne ned ting jeg kom på
+idegenerering litt mystisk, hvor kommer idéer fra? både tidligere erfaringer og opplevelser og også ideer som skrives ned genererer nye ideer
+foreløpig plan: ikke dvele for lenge ved hver idé, jo lengre man bruker på en idé, jo mer kjær blir idéen og man blir fastlåst
+bestemte meg for å bruke 3 timer på idégenerering: fra 0900 til 1200, la hodet hvile over lunsj og så velge og videreutvikle et konsept
+	trenger en del tid på detaljering og videreutvikling av konsept tross alt, og tanken er at man vet egentlig ikke hvor godt 
+	en idé fungerer før man får prøvd den ut

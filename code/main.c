@@ -1,7 +1,9 @@
 #include <stdio.h>
+#include "assets.h"
 #include "game.h"
+#include "update.h"
+#include "render.h"
 #include "zsdl.h"
-#include "zcam.h"
 
 #define PRINT_DBG_GAMESTATE 0
 
@@ -14,10 +16,11 @@ int main(int argc, char* argv[])
 
 	Gamestate gamestate_old = GAMESTATE_INIT;
 	Gamestate gamestate_now = GAMESTATE_INIT;
-	Gamestate gamestate_new = GAMESTATE_MAIN;
+	Gamestate gamestate_new = GAMESTATE_INIT;
 
 	// initialize the things
 	SetupSDL();
+	Game* game = CreateGame();
 	Viewport* viewport = CreateViewport("zjam01");
 	Assets* assets = CreateAssets(viewport);
 	Controller* controller = CreateController();
@@ -25,6 +28,15 @@ int main(int argc, char* argv[])
 	i2 default_size = make_i2(ZSDL_INTERNAL_WIDTH, ZSDL_INTERNAL_HEIGHT);
 	Camera* camera = CreateCamera(ZERO_R2, default_size, default_size);
 	Dots* dots = initDots();
+	zGrid* arena = CreateGrid(10, 10, make_i2(32, 32));
+	GenerateArena(arena);
+	u32* player = malloc(sizeof(u32));
+	*player = 5 + arena->width * 3;
+	SET8IN64(ARENA_PLAYER_FACE_N, &arena->cell_data[*player], ARENA_BYTEPOS_PLAYER);
+
+/*vvvvvvvvvvvvvvvvvvvvvvvvvv LOAD ASSETS vvvvvvvvvvvvvvvvvvvvvvvvvv*/
+	LoadTexture(assets, T_PLAYER, viewport->renderer, "assets/player.png");
+/*^^^^^^^^^^^^^^^^^^^^^^^^^^ LOAD ASSETS ^^^^^^^^^^^^^^^^^^^^^^^^^^*/
 
 	// SDL clock is accurate to 10ms, i.e. it counts in 10 ms. maybe switch to more accurate one 
 	u32 current_time	 = SDL_GetTicks(); 
@@ -127,19 +139,31 @@ printf("Gamestate change from %s \tto %s was deemed illegal!\n", GamestateName(g
 			switch (gamestate_now)
 			{
 	            case GAMESTATE_INIT:
+					gamestate_new = GAMESTATE_MAIN;
 	                break;
 	            case GAMESTATE_MAIN:
+					gamestate_new = UpdateMain(t, dt_sec, viewport, game, arena, controller, dots, assets, player);
 	                break;
 	            case GAMESTATE_PLAY:
+					gamestate_new = UpdatePlay(t, dt_sec, viewport, game, arena, controller, dots, assets, player);
 	                break;
 	            case GAMESTATE_LOSE:
+					gamestate_new = UpdateLose(t, dt_sec, viewport, game, arena, controller, dots, assets);
 	                break;
 	            case GAMESTATE_VICT:
+#if PRINT_DBG_GAMESTATE
+printf("Gamestate entered state it shouldn't be in: %s \tto %s !\n", GamestateName(gamestate_old), GamestateName(gamestate_now));
+#endif					
+					gamestate_new = GAMESTATE_EXIT;
 	                break;
 	            case GAMESTATE_EDIT:
+#if PRINT_DBG_GAMESTATE
+printf("Gamestate entered state it shouldn't be in: %s \tto %s !\n", GamestateName(gamestate_old), GamestateName(gamestate_now));
+#endif					
+					gamestate_new = GAMESTATE_EXIT;
 	                break;
 	            case GAMESTATE_EXIT:
-	                break;
+		            break;
 			}
 			// advance time
 			t++;
@@ -155,10 +179,13 @@ printf("Gamestate change from %s \tto %s was deemed illegal!\n", GamestateName(g
 	            case GAMESTATE_INIT:
 	                break;
 	            case GAMESTATE_MAIN:
+					RenderMain(viewport, arena, controller, assets, camera, dots);
 	                break;
 	            case GAMESTATE_PLAY:
+					RenderPlay(viewport, arena, controller, assets, camera, dots);
 	                break;
 	            case GAMESTATE_LOSE:
+					RenderLose(viewport, arena, controller, assets, camera, dots);
 	                break;
 	            case GAMESTATE_VICT:
 	                break;
@@ -169,15 +196,18 @@ printf("Gamestate change from %s \tto %s was deemed illegal!\n", GamestateName(g
 			}
 		FinalizeRenderAndPresent(viewport);
 	} //main loop end
-
+#if PRINT_DBG_GAMESTATE
+printf("\n~~~Exiting game!~~~\n");
+#endif		
 	// free all things
+	free(player);
 	FreeDots(dots);
-	FreePlayer(player);
 	FreeCamera(camera);
 	FreeMenu(menu);
 	FreeController(controller);
 	FreeAssets(assets);
 	FreeViewport(viewport);
+	FreeGame(game);
 
 	Mix_Quit();
 	IMG_Quit();

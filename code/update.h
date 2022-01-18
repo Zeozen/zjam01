@@ -4,8 +4,8 @@
 #include "game.h"
 #include "zsdl.h"
 
-Gamestate UpdateTitle(Gamestate previous_state, u32 t, r32 dt, Viewport* viewport, oMixer* audio, Controller* controller, Assets* assets, Menu* menu, Camera* camera, Dots* dots);
-Gamestate UpdatePlaying(Gamestate previous_state, u32 t, r32 dt, Viewport* viewport, oMixer* audio, Controller* controller, Assets* assets, Player* player, Camera* camera, Level* level, Dots* dots);
-Gamestate UpdateVictory(Gamestate previous_state, u32 t, r32 dt, Viewport* viewport, oMixer* audio, Controller* controller, Assets* assets, Menu* menu, Player* player, Camera* camera, Dots* dots);
+Gamestate UpdateMain(u32 t, r32 dt, Viewport* viewport, Game* game, zGrid* arena, Controller* controller, Dots* dots, Assets* assets, u32* player);
+Gamestate UpdatePlay(u32 t, r32 dt, Viewport* viewport, Game* game, zGrid* arena, Controller* controller, Dots* dots, Assets* assets, u32* player);
+Gamestate UpdateLose(u32 t, r32 dt, Viewport* viewport, Game* game, zGrid* arena, Controller* controller, Dots* dots, Assets* assets);
 
 #endif // !UPDATE_H

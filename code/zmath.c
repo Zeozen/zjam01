@@ -716,7 +716,7 @@ u8 GET8IN32( u32 target,  int pos)
 
 u8 GET8IN64(u64 target, int pos)
 {
-	return (u8)((target & B8(pos)) >> pos * 8);
+	return (u8)((target & B8_64(pos)) >> pos * 8);
 }
 
 void SET8IN16( u8 source, u16* destination,  int pos)
@@ -729,6 +729,12 @@ void SET8IN32( u8 source, u32* destination,  int pos)
 {
 	*destination &= ~B8(pos); //clear byte before insertion
 	*destination |= (u32)(source << pos * 8);
+}
+
+void SET8IN64( u8 source, u64* destination,  int pos)
+{
+	*destination &= ~B8_64(pos); //clear byte before insertion
+	*destination |= (u64)((u64)source << (pos * 8));
 }
 
 void SET4IN8( u8 source, u8* destination,  int pos)

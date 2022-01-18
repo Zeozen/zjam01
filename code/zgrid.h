@@ -1,11 +1,10 @@
-#ifndef LEVEL_H
-#define LEVEL_H
+#ifndef ZGRID_H
+#define ZGRID_H
 
 #include "zmath.h"
 #include "zsdl.h"
 
-//GRID TYPE, not used
-typedef enum ZCELL_DATA
+typedef enum
 {
     ZCELL_DATA_COLLIISON,
     ZCELL_DATA_TYPE,
@@ -15,19 +14,18 @@ typedef enum ZCELL_DATA
     ZCELL_DATA_SPRITE_FG
 } ZCELL_DATA;
 
-typedef struct zGrid
+typedef struct
 {
     u16 width;      //x
     u16 height;     //y
-    u16 depth;      //z, how many data entries per cell
-    u16 cell_size;
-    u8* cell_data;
+    u16 cell_width;  // in pixels
+    u16 cell_height;  // in pixels
+    u64* cell_data;
 } zGrid;
 
-zGrid*  CreateGrid  (u16 width, u16 height, u16 depth, u16 cell_size);
+zGrid*  CreateGrid  (u16 width, u16 height, i2 cell_size);
 void    FreeGrid    (zGrid* grid);
 
-i32 GridTotalSize(zGrid* grid);
 u8 ValidateCel(i2 cel, zGrid* grid);
 
 i2  CelToPix(i2  cel, zGrid* grid);
@@ -41,28 +39,10 @@ u32 CelToIdx(i2  cel, zGrid* grid);
 u32 PosToIdx(r2  pos, zGrid* grid);
 #define BITMASK_SPRITE_ROW 0xf0
 #define BITMASK_SPRITE_COL 0x0f
-//GRID END
-
-
-#define LEVEL_WIDTH 256
-#define LEVEL_HEIGHT 256
-#define MAX_LEVELS 9
-
-typedef struct 
-{
-    u8 collision[LEVEL_WIDTH*LEVEL_HEIGHT];
-    i2 spawn_location;
-    i2 goal_location;
-    u64 information;
-} Level;
-
-void InitiateLevels(Level* levels[], Viewport* viewport, Assets* assets);
 
 
 
 
 
 
-
-
-#endif //LEVEL_H
+#endif //ZGRID_H

@@ -8,37 +8,22 @@
 #include "zmath.h"
 
 
-
-//#define ZSDL_INTERNAL_WIDTH 384
-//#define ZSDL_INTERNAL_HEIGHT 216
-#define ZSDL_INTERNAL_WIDTH 256
-#define ZSDL_INTERNAL_HEIGHT 256
+/*vvvvvvvvvvvvvvvvvvvvvvvvvv VIEWPORT vvvvvvvvvvvvvvvvvvvvvvvvvv*/
+// 1/5th of full HD(1920x1080) =  384 x 216
+#define ZSDL_INTERNAL_WIDTH 960
+#define ZSDL_INTERNAL_HEIGHT 540
 
 #define ZSDL_RENDERLAYERS_MAX 7
 typedef enum
 {
     ZSDL_RENDERLAYER_BACKGROUND,
     ZSDL_RENDERLAYER_ENTITIES,
-    ZSDL_RENDERLAYER_ENVIRONMENT,
-    ZSDL_RENDERLAYER_EFFECTS,
-    ZSDL_RENDERLAYER_FILTER,
-    ZSDL_RENDERLAYER_UI,
-    ZSDL_RENDERLAYER_FADE,
+    ZSDL_RENDERLAYER_FOREGROUND,
+    ZSDL_RENDERLAYER_POST_PROCESS_A,
+    ZSDL_RENDERLAYER_UI_STATIC,
+    ZSDL_RENDERLAYER_UI_DYNAMIC,
+    ZSDL_RENDERLAYER_POST_PROCESS_B,
 }ZSDL_RENDERLAYER;
-
-
-#define ZSDL_CURSOR_CROSSHAIR_HOT_X 7
-#define ZSDL_CURSOR_CROSSHAIR_HOT_Y 7
-#define ZSDL_CURSOR_POINTER_HOT_X 1
-#define ZSDL_CURSOR_POINTER_HOT_Y 1
-#define ZSDL_CURSOR_BASE_SIZE 15
-typedef enum
-{
-    ZSDL_CURSOR_POINTER,
-    ZSDL_CURSOR_CROSSHAIR,
-    ZSDL_CURSOR_OPEN_HAND,
-    ZSDL_CURSOR_PINCH_HAND
-}ZSDL_CURSOR;
 
 #define ZSDL_SETTINGS_FULLSCREEN_TOGGLED 0
 typedef struct
@@ -50,7 +35,19 @@ typedef struct
     b8              settings;
 } Viewport;
 
+b8 SetupSDL();
+Viewport* CreateViewport(const char* window_title);
+void FreeViewport(Viewport* viewport);
+u8 ComputePixelScale(Viewport* viewport);
+void ToggleFullscreen(Viewport* viewport);
+// render functions
+void BlurRenderlayer(Viewport* viewport, ZSDL_RENDERLAYER renderlayer, i32 amount, i32 opacity);
+void CleanRenderTargets(Viewport* viewport);
+void FinalizeRenderAndPresent(Viewport* viewport);
+/*^^^^^^^^^^^^^^^^^^^^^^^^^^ VIEWPORT ^^^^^^^^^^^^^^^^^^^^^^^^^^*/
 
+
+/*vvvvvvvvvvvvvvvvvvvvvvvvvv ASSETBANK vvvvvvvvvvvvvvvvvvvvvvvvvv*/
 #define ASSETBANK_TEXTURES_MAX 8
 #define ASSETBANK_SOUNDS_MAX 16
 #define ASSETBANK_MUSIC_MAX 2
@@ -70,9 +67,18 @@ typedef struct
 	char* str[ASSETBANK_STRINGS_MAX];
 } Assets;
 
+Assets* CreateAssets(Viewport* viewport);
+void FreeAssets(Assets* assets);
+void LoadSound(Assets* assets, i32 identifier, const char* path);
+void FreeSound(Assets* assets, i32 identifier, const char* path);
+void LoadSurface(Assets* assets, i32 identifier, const char* path);
+void LoadString(Assets* assets, i32 identifier, const char* path);
+void LoadTexture(Assets* assets, i32 identifier, SDL_Renderer* renderer, const char* path);
+void LoadCursor(Assets* assets, i32 surface_id, i32 cursor_id, i32 cursor_hotspot_x, i32 cursor_hotspot_y);
+/*^^^^^^^^^^^^^^^^^^^^^^^^^^ ASSETBANK ^^^^^^^^^^^^^^^^^^^^^^^^^^*/
 
 
-/*input*/
+/*vvvvvvvvvvvvvvvvvvvvvvvvvv INPUT CONTROLLER vvvvvvvvvvvvvvvvvvvvvvvvvv*/
 // ACTION MASKS
 //  usage: if (Actions.player & ACTION(A_PLR_JMP) ) -> doJumpAction
 //  store current actions in lower 16 bits and previous actions in upper 16 bits
@@ -89,10 +95,10 @@ typedef struct
 #define A_SHFT 8
 #define A_MB_L 9
 #define A_MB_R 10
-#define A_REPL 11
-#define A_NO_3 12
-#define A_NO_4 13
-#define A_NO_5 14
+#define A_MOVL 11
+#define A_MOVR 12
+#define A_MOVU 13
+#define A_MOVD 14
 #define A_FSCR 15 // fullscreen
 #define A_ESC 16
 
@@ -104,6 +110,18 @@ typedef struct
 	i2  mouse_location;
 } Controller;
 
+Controller* CreateController();
+void FreeController(Controller* controller);
+
+void CollectInput(Controller* c);
+i2 MouseLocation(Controller* c, Viewport* viewport);
+b8 ActionPressed(Controller* c, u32 action);
+b8 ActionReleased(Controller* c, u32 action);
+b8 ActionHeld(Controller* c, u32 action);
+/*^^^^^^^^^^^^^^^^^^^^^^^^^^ INPUT CONTROLLER ^^^^^^^^^^^^^^^^^^^^^^^^^^*/
+
+
+/*vvvvvvvvvvvvvvvvvvvvvvvvvv DOT PARTICLES vvvvvvvvvvvvvvvvvvvvvvvvvv*/
 #define DOTS_MAX 200
 typedef struct
 {
@@ -131,13 +149,15 @@ typedef struct
 	Dot dot[DOTS_MAX];
 } Dots;
 
-//dots
 Dots* initDots();
 b8 SpawnDot(Dots* dots, u16 lifetime, r2 pos, r2 vel, r2 acc, u8 r_0, u8 g_0, u8 b_0, u8 a_0, u8 r_1, u8 g_1, u8 b_1, u8 a_1);
 void tickDots(Dots* dots, u32 t, r32 dt);
 void DrawDots(Viewport* viewport, u32 t, Dots* dots);
 void FreeDots(Dots* dots);
+/*^^^^^^^^^^^^^^^^^^^^^^^^^^ DOT PARTICLES ^^^^^^^^^^^^^^^^^^^^^^^^^^*/
 
+
+/*vvvvvvvvvvvvvvvvvvvvvvvvvv GUI vvvvvvvvvvvvvvvvvvvvvvvvvv*/
 #define BUTTON_STATE_MASK_CURR	0x0f
 #define BUTTON_STATE_MASK_PREV	0xf0
 #define BUTTON_STATE_MAX        6
@@ -167,45 +187,52 @@ typedef struct
     Button* victory[MENU_VICTORY_NUM_BTN];
 } Menu;
 
-// initialisers
-b8 SetupSDL();
-Viewport* CreateViewport(const char* window_title);
-void FreeViewport(Viewport* viewport);
-Controller* CreateController();
-void FreeController(Controller* controller);
-Assets* CreateAssets(Viewport* viewport);
-void FreeAssets(Assets* assets);
 Button* CreateButton(SDL_Rect source, SDL_Rect destination);
 void FreeButton(Button* button);
 Menu* CreateMenu();
 void FreeMenu(Menu* menu);
 
-
-void LoadSound(Assets* assets, i32 identifier, const char* path);
-void FreeSound(Assets* assets, i32 identifier, const char* path);
-void LoadSurface(Assets* assets, i32 identifier, const char* path);
-void LoadString(Assets* assets, i32 identifier, const char* path);
-void LoadTexture(Assets* assets, i32 identifier, SDL_Renderer* renderer, const char* path);
-void LoadCursor(Assets* assets, i32 surface_id, i32 cursor_id, i32 cursor_hotspot_x, i32 cursor_hotspot_y);
-
-// window scalings
-void RefreshCursors(Viewport* viewport, Assets* assets);
-u8 ComputePixelScale(Viewport* viewport);
-void ToggleFullscreen(Viewport* viewport);
-
-// render functions
-void BlurRenderlayer(Viewport* viewport, ZSDL_RENDERLAYER renderlayer, i32 amount, i32 opacity);
-void CleanRenderTargets(Viewport* viewport);
-void FinalizeRenderAndPresent(Viewport* viewport);
-
-// input
-void CollectInput(Controller* c);
-i2 MouseLocation(Controller* c, Viewport* viewport);
-b8 ActionPressed(Controller* c, u32 action);
-b8 ActionReleased(Controller* c, u32 action);
-b8 ActionHeld(Controller* c, u32 action);
-
-//button
 E_BUTTON_STATE ButtonStateTransition(Button* btn, E_BUTTON_STATE next_state);
 char* ButtonStateName(E_BUTTON_STATE state);
+/*^^^^^^^^^^^^^^^^^^^^^^^^^^ GUI ^^^^^^^^^^^^^^^^^^^^^^^^^^*/
+
+
+/*vvvvvvvvvvvvvvvvvvvvvvvvvv CURSOR vvvvvvvvvvvvvvvvvvvvvvvvvv*/
+#define ZSDL_CURSOR_CROSSHAIR_HOT_X 7
+#define ZSDL_CURSOR_CROSSHAIR_HOT_Y 7
+#define ZSDL_CURSOR_POINTER_HOT_X 1
+#define ZSDL_CURSOR_POINTER_HOT_Y 1
+#define ZSDL_CURSOR_BASE_SIZE 15
+typedef enum
+{
+    ZSDL_CURSOR_POINTER,
+    ZSDL_CURSOR_CROSSHAIR,
+    ZSDL_CURSOR_OPEN_HAND,
+    ZSDL_CURSOR_PINCH_HAND
+}ZSDL_CURSOR;
+
+void RefreshCursors(Viewport* viewport, Assets* assets);
+/*^^^^^^^^^^^^^^^^^^^^^^^^^^ CURSOR ^^^^^^^^^^^^^^^^^^^^^^^^^^*/
+
+
+/*vvvvvvvvvvvvvvvvvvvvvvvvvv CAMERA vvvvvvvvvvvvvvvvvvvvvvvvvv*/
+typedef struct Camera
+{
+    r2 pos;
+    r2 aim;
+    i2 siz;
+    i2 INTERNAL_SIZE;
+} Camera;
+
+Camera* CreateCamera(r2 pos, i2 siz, i2 INTERNAL_DIMENSIONS);
+void FreeCamera(Camera* camera);
+
+r2 CamScalingFactor(Camera* camera);
+
+i2 PixToCam(i2 pix, Camera* camera);
+i2 PosToCam(r2 pos, Camera* camera);
+i2 CamToPix(i2 cam, Camera* camera);
+r2 CamToPos(i2 cam, Camera* camera);
+/*^^^^^^^^^^^^^^^^^^^^^^^^^^ CAMERA ^^^^^^^^^^^^^^^^^^^^^^^^^^*/
+
 #endif // ZSDL_H

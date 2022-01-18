@@ -1,5 +1,5 @@
 # Compiler options
-pkglibs = sdl2 SDL2_mixer SDL2_image SDL2_ttf opusfile
+pkglibs = sdl2 SDL2_mixer SDL2_image SDL2_ttf
 CC=gcc
 CFLAGS= -Wall $(shell pkg-config --cflags $(pkglibs))
 LDFLAGS= $(shell pkg-config --libs-only-other $(pkglibs))

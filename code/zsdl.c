@@ -18,22 +18,18 @@ b8 SetupSDL()
 			printf("IMG_Init: %s\n", IMG_GetError());
 		}
 
-		// init SDL_TTF
-		if (TTF_Init() == -1)
-		{
-			printf("TTF_Init: %s\n", TTF_GetError());
-		}
+		//// init SDL_TTF
+		//if (TTF_Init() == -1)
+		//{
+		//	printf("TTF_Init: %s\n", TTF_GetError());
+		//}
 
-	/* Get init data on all the subsystems */
-Uint32 subsystem_init;
-
-subsystem_init = SDL_WasInit(SDL_INIT_EVERYTHING);
-
-if (subsystem_init & SDL_INIT_AUDIO) {
-    printf("Audio is initialized.\n");
-} else {
-    printf("Audio is not initialized.\n");
-}
+		/* Get init data on all the subsystems */
+		Uint32 subsystem_init = SDL_WasInit(SDL_INIT_EVERYTHING);
+		if (subsystem_init & SDL_INIT_AUDIO)
+			printf("Audio is initialized.\n");
+		else 
+	    printf("Audio is not initialized.\n");
 		return 1;
 	}
 }
@@ -44,7 +40,7 @@ Viewport* CreateViewport(const char* window_title)
 	viewport->settings = 0;
 
 	printf("Initialising zSDL viewport...\n");
-	int windowscale = 3;
+	int windowscale = 1;
 	viewport->window =
 		SDL_CreateWindow(window_title, SDL_WINDOWPOS_CENTERED_DISPLAY(0), SDL_WINDOWPOS_CENTERED_DISPLAY(0),
 						 ZSDL_INTERNAL_WIDTH * windowscale, ZSDL_INTERNAL_HEIGHT * windowscale,
@@ -148,47 +144,6 @@ Assets* CreateAssets(Viewport* viewport)
     Assets* assets = (Assets*)malloc(sizeof(Assets));
 	memset(assets, 0, sizeof(Assets));
 
-	LoadSound(assets, 0, "assets/badapple.ogg");
-	LoadSound(assets, 1, "assets/scale.ogg");
-	LoadSound(assets, MUS_MENU, "assets/mus_menu.opus");
-	LoadSound(assets, MUS_LEVEL, "assets/mus_level.opus");
-	LoadSound(assets, MUS_START, "assets/mus_levelstart.opus");
-	LoadSound(assets, SFX_BTN_HOVER, "assets/menu_selection_01.opus");
-	LoadSound(assets, SFX_BTN_PRESS, "assets/ball_hit_02.opus");
-	LoadSound(assets, SFX_BTN_RLEAS, "assets/menu_selection_03.opus");
-	LoadSound(assets, SFX_BALL_CHARGE, "assets/windup_01.opus");
-	LoadSound(assets, SFX_BALL_SHOOT, "assets/ball_swing_01.opus");
-	LoadSound(assets, SFX_BALL_HIT, "assets/ball_hit_04.opus");
-	LoadSound(assets, SFX_BALL_BOUNCE_A, "assets/ball_hit_04.opus");
-	LoadSound(assets, SFX_BALL_BOUNCE_B, "assets/ball_hit_05.opus");
-	LoadSound(assets, ASA_P_C4, "assets/Piano.mf.C4.ogg");
-	LoadSound(assets, ASA_P_Db4, "assets/Piano.mf.Db4.ogg");
-	LoadSound(assets, ASA_P_D4, "assets/Piano.mf.D4.ogg");
-	LoadSound(assets, ASA_P_Eb4, "assets/Piano.mf.Eb4.ogg");
-	LoadSound(assets, ASA_P_E4, "assets/Piano.mf.E4.ogg");
-	LoadSound(assets, ASA_P_F4, "assets/Piano.mf.F4.ogg");
-	LoadSound(assets, ASA_P_Gb4, "assets/Piano.mf.Gb4.ogg");
-	LoadSound(assets, ASA_P_G4, "assets/Piano.mf.G4.ogg");
-	LoadSound(assets, ASA_P_Ab4, "assets/Piano.mf.Ab4.ogg");
-	LoadSound(assets, ASA_P_A4, "assets/Piano.mf.A4.ogg");
-	LoadSound(assets, ASA_P_Bb4, "assets/Piano.mf.Bb4.ogg");
-	LoadSound(assets, ASA_P_B4, "assets/Piano.mf.B4.ogg");
-	LoadSound(assets, ASA_P_C5, "assets/Piano.mf.C5.ogg");
-	LoadSound(assets, ASA_P_Db5, "assets/Piano.mf.Db5.ogg");
-	LoadSound(assets, ASA_P_D5, "assets/Piano.mf.D5.ogg");
-	LoadSound(assets, ASA_P_Eb5, "assets/Piano.mf.Eb5.ogg");
-	LoadSound(assets, ASA_P_E5, "assets/Piano.mf.E5.ogg");
-
-//TODO: load in all levels
-	LoadTexture(assets, T_LEVEL_BACKGROUND, viewport->renderer, "assets/level_00_bg.png");
-	LoadTexture(assets, T_LEVEL_FOREGROUND, viewport->renderer, "assets/level_00_fg.png");
-	LoadTexture(assets, T_MENU_BUTTONS, viewport->renderer, "assets/t_ui_btns.png");
-	LoadTexture(assets, T_TITLE_SCREEN, viewport->renderer, "assets/title.png");
-	LoadTexture(assets, T_ENDING_SCREEN, viewport->renderer, "assets/ending.png");
-	LoadTexture(assets, T_FONTMAP, viewport->renderer, "assets/t_ui_numbers.png");
-	LoadTexture(assets, T_XYLOXANDER, viewport->renderer, "assets/xyloxander.png");
-	LoadSurface(assets, 0, "assets/level_00.png");
-
 	if (assets == NULL)
 		printf("failed to init assets!\n");
 	else
@@ -198,8 +153,57 @@ Assets* CreateAssets(Viewport* viewport)
 
 void FreeAssets(Assets* assets)
 {
+	for (i32 i = 0; i < ASSETBANK_TEXTURES_MAX; i++)
+	{
+		if (assets->tex[i] != NULL)
+		{
+			SDL_DestroyTexture(assets->tex[i]);
+			assets->tex[i] = NULL;
+		}
+	}
+	for (i32 i = 0; i < ASSETBANK_SOUNDS_MAX; i++)
+	{
+		if (assets->sfx[i] != NULL)
+		{
+			Mix_FreeChunk(assets->sfx[i]);
+			assets->sfx[i] = NULL;
+		}
+	}
+	for (i32 i = 0; i < ASSETBANK_MUSIC_MAX; i++)
+	{
+		if (assets->mus[i] != NULL)
+		{
+			Mix_FreeMusic(assets->mus[i]);
+			assets->mus[i] = NULL;
+		}
+	}
+	for (i32 i = 0; i < ASSETBANK_CURSORS_MAX; i++)
+	{
+		if (assets->cur[i] != NULL)
+		{
+			SDL_FreeCursor(assets->cur[i]);
+			assets->cur[i] = NULL;
+		}
+	}
+	for (i32 i = 0; i < ASSETBANK_SURFACES_MAX; i++)
+	{
+		if (assets->sur[i] != NULL)
+		{
+			SDL_FreeSurface(assets->sur[i]);
+			assets->sur[i] = NULL;
+		}
+	}
+	for (i32 i = 0; i < ASSETBANK_SURFACES_MAX; i++)
+	{
+		if (assets->str[i] != NULL)
+		{
+			free(assets->str[i]);
+			assets->str[i] = NULL;
+		}
+	}
+
     free(assets);
-	printf("assets freed, but the asset free function is not complete\n");
+	printf("assets freed\n");
 }
 
 Button* CreateButton(SDL_Rect source, SDL_Rect destination)
@@ -318,7 +322,7 @@ void LoadTexture(Assets* assets, i32 identifier, SDL_Renderer* renderer, const c
 		}
 	}
 }
-
+/*
 void LoadSound(Assets* assets, i32 identifier, const char* path)
 {
 	if ((assets->snd[identifier] != NULL) || (identifier >= ASSETBANK_SOUNDS_MAX))
@@ -393,7 +397,7 @@ void FreeSound(Assets* assets, i32 identifier, const char* path)
 		obuf = NULL;
 	}
 }
-
+*/
 void LoadCursor(Assets* assets, i32 surface_id, i32 cursor_id, i32 cursor_hotspot_x, i32 cursor_hotspot_y)
 {
 	if ((assets->sur[surface_id] == NULL) || (surface_id >= ASSETBANK_SURFACES_MAX))
@@ -652,10 +656,10 @@ void CollectInput(Controller* c)
 	c->actions |= ACTION(A_MB_L) * !!(mousestate & SDL_BUTTON_LMASK);
 	c->actions |= ACTION(A_MB_R) * !!(mousestate & SDL_BUTTON_RMASK);
 	c->actions |= ACTION(A_JUMP) * keystate[SDL_SCANCODE_SPACE];
-	c->actions |= ACTION(A_REPL) * keystate[SDL_SCANCODE_R];
-	c->actions |= ACTION(A_NO_3) * keystate[SDL_SCANCODE_M];
-	c->actions |= ACTION(A_NO_4) * keystate[SDL_SCANCODE_J];
-	c->actions |= ACTION(A_NO_5) * keystate[SDL_SCANCODE_H];
+	c->actions |= ACTION(A_MOVL) * keystate[SDL_SCANCODE_LEFT];
+	c->actions |= ACTION(A_MOVR) * keystate[SDL_SCANCODE_RIGHT];
+	c->actions |= ACTION(A_MOVU) * keystate[SDL_SCANCODE_UP];
+	c->actions |= ACTION(A_MOVD) * keystate[SDL_SCANCODE_DOWN];
 	c->actions |= ACTION(A_PLAY) * keystate[SDL_SCANCODE_F9];
 	c->actions |= ACTION(A_EDIT) * keystate[SDL_SCANCODE_F1];
 	c->actions |= ACTION(A_DBUG) * keystate[SDL_SCANCODE_F11];
@@ -699,6 +703,7 @@ b8 ActionHeld( Controller* c,  u32 action)
 	return ((c->actions & ACTION(action)) && (c->actions & ACTION_PRE(action)));
 }
 
+/*vvvvvvvvvvvvvvvvvvvvvvvvvv DOT PARTICLES vvvvvvvvvvvvvvvvvvvvvvvvvv*/
 Dots* initDots()
 {
 	Dots* dots = (Dots*)malloc(sizeof(Dots));
@@ -763,8 +768,6 @@ b8 SpawnDot(Dots* dots, u16 lifetime, r2 pos, r2 vel, r2 acc, u8 r_0, u8 g_0, u8
 	}
 }
 
-
-
 void tickDots(Dots* dots, u32 t, r32 dt)
 {
 	for (i32 i = 0; i < DOTS_MAX; i++)
@@ -802,3 +805,63 @@ void FreeDots(Dots* dots)
 	free(dots);
 	printf("Dots freed.\n");
 }
+/*^^^^^^^^^^^^^^^^^^^^^^^^^^ DOT PARTICLES ^^^^^^^^^^^^^^^^^^^^^^^^^^*/
+
+
+/*vvvvvvvvvvvvvvvvvvvvvvvvvv CAMERA vvvvvvvvvvvvvvvvvvvvvvvvvv*/
+//pass ZSDL_INTERNAL_WIDTH and HEIGHT from zsdl.h when creating a camera
+Camera* CreateCamera(r2 pos, i2 siz, i2 INTERNAL_DIMENSIONS)
+{
+	Camera* new_camera = (Camera*)malloc(sizeof(Camera));
+	if (new_camera == NULL)
+	{
+		return NULL;
+	}
+	else
+	{
+		new_camera->pos = pos;
+		new_camera->siz = siz;
+		new_camera->INTERNAL_SIZE = INTERNAL_DIMENSIONS;
+		return new_camera;
+	}
+}
+
+void FreeCamera(Camera* camera)
+{
+	if (camera != NULL)
+	{
+		free(camera);
+		camera = NULL;
+	}
+}
+
+
+r2 CamScalingFactor(Camera* camera)
+{
+	r2 scaling_factor = make_r2(camera->INTERNAL_SIZE.x / (r32)camera->siz.x, camera->INTERNAL_SIZE.y / (r32)camera->siz.y);
+    return scaling_factor;
+}
+
+i2 PixToCam(i2 pix, Camera* camera)
+{
+	return i2_mul_r2(sub_i2(pix, PosToPix(camera->pos)), CamScalingFactor(camera));
+}
+
+i2 PosToCam( r2 pos, Camera* camera)
+{
+	return PixToCam(PosToPix(pos), camera);
+}
+
+i2 CamToPix(i2 cam, Camera* camera)
+{
+	r2 scaling_factor = CamScalingFactor(camera);
+	i2 pix_from_screen = make_i2((i32)(cam.x / scaling_factor.x), (i32)(cam.y / scaling_factor.y));
+	return add_i2(pix_from_screen, PosToPix(camera->pos));
+}
+
+r2 CamToPos( i2 cam, Camera* camera)
+{
+	return PixToPos(CamToPix(cam, camera));
+}
+
+/*^^^^^^^^^^^^^^^^^^^^^^^^^^ CAMERA ^^^^^^^^^^^^^^^^^^^^^^^^^^*/

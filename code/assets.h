@@ -8,7 +8,8 @@
 #define T_ENDING_SCREEN 3
 #define T_FONTMAP 4
 #define T_LEVEL_FOREGROUND 5
-#define T_XYLOXANDER 6
+#define T_PLAYER 6
+
 
 
 #endif //ASSETS_H

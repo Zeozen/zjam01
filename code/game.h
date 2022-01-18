@@ -2,6 +2,8 @@
 #define GAME_H
 
 #include "zmath.h"
+#include "zgrid.h"
+
 
 #define NUMBER_OF_GAMESTATES 7
 typedef enum
@@ -15,32 +17,75 @@ typedef enum
     GAMESTATE_EXIT,
 } Gamestate;
 
+
 typedef struct
 {
-    Gamestate state;
-    u64 settings;
+    u32 tick_frequency;
+    u32 score_time;
+    u32 score_kill;
+    u32 score_coin;
+    u32 score_xtra;
+    u32 score_full;
 } Game;
 
+char* GetGamestateName(Gamestate state);
 
-typedef struct 
+Game* CreateGame();
+void FreeGame(Game* game);
+
+void GenerateArena(zGrid* grid);
+
+#define ARENA_BYTEPOS_TILETYPE 0
+#define ARENA_BYTEPOS_PLAYER 1
+#define ARENA_BYTEPOS_ENEMY 2
+#define ARENA_BYTEPOS_POWER 3
+#define ARENA_BYTEPOS_TRAP 4
+#define ARENA_BITMASK_TILETYPE 0xff
+#define ARENA_BITMASK_PLAYER 0xff<<8
+#define ARENA_BITMASK_ENEMY 0xff<<16
+#define ARENA_BITMASK_POWER 0xff<<24
+#define ARENA_BITMASK_TRAP 0xff<<32
+
+#define ARENA_PLAYER_FACE_N 0b00000001
+#define ARENA_PLAYER_FACE_E 0b00010001
+#define ARENA_PLAYER_FACE_S 0b00100001
+#define ARENA_PLAYER_FACE_W 0b00110001
+
+#define ARENA_ORIENTATION_N 0
+#define ARENA_ORIENTATION_E 1
+#define ARENA_ORIENTATION_S 2
+#define ARENA_ORIENTATION_W 3
+
+
+
+typedef enum
 {
-    r2 pos;
-    r2 vel;
-    r2 acc;
-} Player;
+    ARENA_WALL,
+    ARENA_TILE,
+}ArenaTiletype;
 
+typedef enum
+{
+    ENEMY_BRUTE,
+    ENEMY_ROGUE,
+}EnemyType;
 
-Gamestate StateTransition(Gamestate current_state, Gamestate next_state, Menu* menu, oMixer* audio, Assets* assets);
-char* GamestateName(Gamestate state);
+typedef enum
+{
+    POWER_SHIELD,
+    POWER_BOW,
+    POWER_FREEZE,
+    POWER_SLOW,
+    POWER_EXPLODE,
+    POWER_BERSERK,
+    POWER_COIN,
+}PowerupType;
 
-
-
-
-
-
-
-Player* CreatePlayer();
-void FreePlayer(Player* player);
-
+typedef enum
+{
+    TRAP_DART,
+    TRAP_SPIKES,
+    TRAP_PARALYZE,
+}TrapType;
 
 #endif // GAME_H
