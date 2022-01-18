@@ -35,9 +35,9 @@ void DrawArena(Viewport* viewport, zGrid* arena, Assets* assets, i2 location)
 
 
         SDL_Rect plr_rect = {cell_rect.x + (cell_rect.w/2) - 4, (cell_rect.y + cell_rect.h/2) - 4, 8, 8};
-        if ( GET8IN64(arena->cell_data[i], ARENA_BYTEPOS_PLAYER) != 0)
+        if ( GET8IN64(arena->cell_data[i], ARENA_BYTEPOS_ENTITY) == ARENA_ENTITY_PLAYER)
         {
-            u8 plr_rotation = GET4IN8(GET8IN64(arena->cell_data[i], ARENA_BYTEPOS_PLAYER), 1);
+            u8 plr_rotation = GET8IN64(arena->cell_data[i], ARENA_BYTEPOS_ORIENTATION);
             SDL_Rect p_rect_src = {plr_rotation*32, 0, 32, 32};
             SDL_RenderCopy(viewport->renderer, assets->tex[T_PLAYER], &p_rect_src, &cell_rect);
             SDL_SetRenderDrawColor(viewport->renderer, 0xff, 0x99, 0x99, 0xff);

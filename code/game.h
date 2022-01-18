@@ -36,14 +36,14 @@ void FreeGame(Game* game);
 void GenerateArena(zGrid* grid);
 
 #define ARENA_BYTEPOS_TILETYPE 0
-#define ARENA_BYTEPOS_PLAYER 1
-#define ARENA_BYTEPOS_ENEMY 2
-#define ARENA_BYTEPOS_POWER 3
+#define ARENA_BYTEPOS_ENTITY 1
+#define ARENA_BYTEPOS_ORIENTATION 2
+#define ARENA_BYTEPOS_POWERUP 3
 #define ARENA_BYTEPOS_TRAP 4
 #define ARENA_BITMASK_TILETYPE 0xff
-#define ARENA_BITMASK_PLAYER 0xff<<8
-#define ARENA_BITMASK_ENEMY 0xff<<16
-#define ARENA_BITMASK_POWER 0xff<<24
+#define ARENA_BITMASK_ENTITY 0xff<<8
+#define ARENA_BITMASK_ORIENTATION 0xff<<16
+#define ARENA_BITMASK_POWERUP 0xff<<24
 #define ARENA_BITMASK_TRAP 0xff<<32
 
 #define ARENA_PLAYER_FACE_N 0b00000001
@@ -56,6 +56,8 @@ void GenerateArena(zGrid* grid);
 #define ARENA_ORIENTATION_S 2
 #define ARENA_ORIENTATION_W 3
 
+#define ARENA_MAX_ENTITIES 16
+#define ARENA_ENTITY_PLAYER 1
 
 
 typedef enum

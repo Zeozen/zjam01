@@ -21,7 +21,7 @@ int main(int argc, char* argv[])
 	// initialize the things
 	SetupSDL();
 	Game* game = CreateGame();
-	Viewport* viewport = CreateViewport("zjam01");
+	Viewport* viewport = CreateViewport("ARENA");
 	Assets* assets = CreateAssets(viewport);
 	Controller* controller = CreateController();
 	Menu* menu = CreateMenu();
@@ -30,9 +30,10 @@ int main(int argc, char* argv[])
 	Dots* dots = initDots();
 	zGrid* arena = CreateGrid(10, 10, make_i2(32, 32));
 	GenerateArena(arena);
-	u32* player = malloc(sizeof(u32));
-	*player = 5 + arena->width * 3;
-	SET8IN64(ARENA_PLAYER_FACE_N, &arena->cell_data[*player], ARENA_BYTEPOS_PLAYER);
+	u32* entities = malloc(sizeof(u32)*ARENA_MAX_ENTITIES);
+	entities[0] = 5 + arena->width * 3;
+	SET8IN64(ARENA_ENTITY_PLAYER, &arena->cell_data[entities[0]], ARENA_BYTEPOS_ENTITY);
+	SET8IN64(ARENA_ORIENTATION_N, &arena->cell_data[entities[0]], ARENA_BYTEPOS_ORIENTATION);
 
 /*vvvvvvvvvvvvvvvvvvvvvvvvvv LOAD ASSETS vvvvvvvvvvvvvvvvvvvvvvvvvv*/
 	LoadTexture(assets, T_PLAYER, viewport->renderer, "assets/player.png");
@@ -142,10 +143,10 @@ printf("Gamestate change from %s \tto %s was deemed illegal!\n", GamestateName(g
 					gamestate_new = GAMESTATE_MAIN;
 	                break;
 	            case GAMESTATE_MAIN:
-					gamestate_new = UpdateMain(t, dt_sec, viewport, game, arena, controller, dots, assets, player);
+					gamestate_new = UpdateMain(t, dt_sec, viewport, game, arena, controller, dots, assets, entities);
 	                break;
 	            case GAMESTATE_PLAY:
-					gamestate_new = UpdatePlay(t, dt_sec, viewport, game, arena, controller, dots, assets, player);
+					gamestate_new = UpdatePlay(t, dt_sec, viewport, game, arena, controller, dots, assets, entities);
 	                break;
 	            case GAMESTATE_LOSE:
 					gamestate_new = UpdateLose(t, dt_sec, viewport, game, arena, controller, dots, assets);
@@ -200,7 +201,7 @@ printf("Gamestate entered state it shouldn't be in: %s \tto %s !\n", GamestateNa
 printf("\n~~~Exiting game!~~~\n");
 #endif		
 	// free all things
-	free(player);
+	free(entities);
 	FreeDots(dots);
 	FreeCamera(camera);
 	FreeMenu(menu);
