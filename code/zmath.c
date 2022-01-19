@@ -72,6 +72,14 @@ r32 RNEG() //returns from -1.f to 1.f
 	return (((r32)seed / (r32)m) - 0.5f) * 2.f;
 }
 
+u32 RUINTG(u32 min, u32 max)
+{
+	return LerpU32(min, max+1, RNG());
+}
+
+
+
+
 
 
 //VECTOR
@@ -857,6 +865,22 @@ void SERIALIZEi32(i32 src, u8* dst, i32 index)
 void DESERIALIZEi32(u8* src, i32 index, i32* dst)
 {
 	for (i32 i = 0; i < 4; i++)
+	{
+		*dst |= (src[index+i] << (24 - i * 8));
+	}
+}
+
+void SERIALIZEu32(u32 src, u8* dst, u32 index)
+{
+	for (u32 i = 0; i < 4; i++)
+	{
+		dst[index + i] 	 = (src >> (24 - i*8)) & 0xFF;
+	}
+}
+
+void DESERIALIZEu32(u8* src, u32 index, u32* dst)
+{
+	for (u32 i = 0; i < 4; i++)
 	{
 		*dst |= (src[index+i] << (24 - i * 8));
 	}

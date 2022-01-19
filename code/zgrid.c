@@ -52,7 +52,7 @@ r2 CelToPos(i2 cel, zGrid* grid)
 u32 CelToIdx(i2 cel, zGrid* grid)
 {
 	if (ValidateCel(cel, grid))
-		return cel.x * + cel.y * grid->width;
+		return cel.x + cel.y * grid->width;
 	else
 		return 0;
 }

@@ -20,18 +20,33 @@ typedef enum
 
 typedef struct
 {
+    u32 ticktime;
     u32 tick_frequency;
+    u32 ticks_per_level;
+    u32 current_level;
+    u32 current_level_progress;
+    u32 spawnrate;
+    u32 combo;
     u32 score_time;
     u32 score_kill;
     u32 score_coin;
     u32 score_xtra;
     u32 score_full;
+    u32 t0_lost_game;
+    u32 t_since_lost_game;
+    u32 t0_main_started;
+    u32 t_since_main_started;
+    u32 active_powerup;
+    u32 ticks_left_powerup_pickup;
+    u32 highscores[4];
 } Game;
 
 char* GetGamestateName(Gamestate state);
 
 Game* CreateGame();
 void FreeGame(Game* game);
+
+void RestartGameScore(Game* game);
 
 void GenerateArena(zGrid* grid);
 
@@ -58,36 +73,30 @@ void GenerateArena(zGrid* grid);
 
 #define ARENA_MAX_ENTITIES 16
 #define ARENA_ENTITY_PLAYER 1
+#define ARENA_ENTITY_ENEMY 2
+#define ARENA_ENTITY_ARROW 3
+
+#define ARENA_TRAP_STARTGAME 1
+
+#define ARENA_TILE_EMPTY 0
+#define ARENA_TILE_SOLID 1
+
+#define ARENA_POWERUP_COIN 1
+#define ARENA_POWERUP_BOW 2
+#define ARENA_POWERUP_ARMOR 3
+#define ARENA_POWERUP_TIMESCROLL 4
 
 
-typedef enum
-{
-    ARENA_WALL,
-    ARENA_TILE,
-}ArenaTiletype;
 
-typedef enum
-{
-    ENEMY_BRUTE,
-    ENEMY_ROGUE,
-}EnemyType;
 
-typedef enum
-{
-    POWER_SHIELD,
-    POWER_BOW,
-    POWER_FREEZE,
-    POWER_SLOW,
-    POWER_EXPLODE,
-    POWER_BERSERK,
-    POWER_COIN,
-}PowerupType;
-
-typedef enum
-{
-    TRAP_DART,
-    TRAP_SPIKES,
-    TRAP_PARALYZE,
-}TrapType;
+u32 MovePlayer(zGrid* arena, Game* game, u32* entities, u32 idx_old, u32 idx_new, u8 orientation);
+b8 IsTileEmpty(zGrid* arena, i2 tile);
+b8 IsTileWalkable(zGrid* arena, i2 tile);
+void SpawnEnemy(zGrid* arena, u32* entities);
+void RemoveEnemy(zGrid* arena, u32* entities, u32 idx);
+void PerformEnemyTurn(zGrid* arena, Game* game, u32* entities);
+u32 MoveEnemy(zGrid* arena, Game* game, u32* entities, u32 idx_old, u32 idx_new, u8 orientation);
+void SpawnPowerup(zGrid* arena, u32* entities);
+void SpawnCoin(zGrid* arena, u32* entities);
 
 #endif // GAME_H

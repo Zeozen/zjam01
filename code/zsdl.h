@@ -40,21 +40,18 @@ Viewport* CreateViewport(const char* window_title);
 void FreeViewport(Viewport* viewport);
 u8 ComputePixelScale(Viewport* viewport);
 void ToggleFullscreen(Viewport* viewport);
-// render functions
-void BlurRenderlayer(Viewport* viewport, ZSDL_RENDERLAYER renderlayer, i32 amount, i32 opacity);
-void CleanRenderTargets(Viewport* viewport);
-void FinalizeRenderAndPresent(Viewport* viewport);
+
 /*^^^^^^^^^^^^^^^^^^^^^^^^^^ VIEWPORT ^^^^^^^^^^^^^^^^^^^^^^^^^^*/
 
 
 /*vvvvvvvvvvvvvvvvvvvvvvvvvv ASSETBANK vvvvvvvvvvvvvvvvvvvvvvvvvv*/
-#define ASSETBANK_TEXTURES_MAX 8
+#define ASSETBANK_TEXTURES_MAX 16
 #define ASSETBANK_SOUNDS_MAX 16
 #define ASSETBANK_MUSIC_MAX 2
 #define ASSETBANK_CURSORS_MAX 2
-#define ASSETBANK_SURFACES_MAX 8
+#define ASSETBANK_SURFACES_MAX 2
 #define ASSETBANK_FONTS_MAX 2
-#define ASSETBANK_STRINGS_MAX 16
+#define ASSETBANK_STRINGS_MAX 1
 
 typedef struct
 {
@@ -234,5 +231,13 @@ i2 PosToCam(r2 pos, Camera* camera);
 i2 CamToPix(i2 cam, Camera* camera);
 r2 CamToPos(i2 cam, Camera* camera);
 /*^^^^^^^^^^^^^^^^^^^^^^^^^^ CAMERA ^^^^^^^^^^^^^^^^^^^^^^^^^^*/
+
+/*vvvvvvvvvvvvvvvvvvvvvvvvvv RENDER SUPPORT FUNCTIONS vvvvvvvvvvvvvvvvvvvvvvvvvv*/
+void BlurRenderlayer(Viewport* viewport, ZSDL_RENDERLAYER renderlayer, i32 amount, i32 opacity);
+void CleanRenderTargets(Viewport* viewport);
+void FinalizeRenderAndPresent(Viewport* viewport);
+
+void DrawNumber(Viewport* viewport, SDL_Texture* texture, u32 number, i2 size_src, i2 size_dst, i2 location, u32 max_digits);
+/*^^^^^^^^^^^^^^^^^^^^^^^^^^ RENDER SUPPORT FUNCTIONS ^^^^^^^^^^^^^^^^^^^^^^^^^^*/
 
 #endif // ZSDL_H

@@ -40,6 +40,7 @@ r32 SMOOTH(r32 t, r32 k);
 
 r32 RNG();
 r32 RNEG();
+u32 RUINTG(u32 min, u32 max);
 /*^^^^^^^^^^^^^^^^^^^^ STATICS END ^^^^^^^^^^^^^^^^^^^^*/
 
 /*vvvvvvvvvvvvvvvvvvvv HELPERS BEGIN vvvvvvvvvvvvvvvvvvvv*/
@@ -295,6 +296,9 @@ char* PRINT_R2(const r2 a);
 
 	void SERIALIZEi32(i32 src, u8* dst, i32 index);
 	void DESERIALIZEi32(u8* src, i32 index, i32* dst);
+
+	void SERIALIZEu32(u32 src, u8* dst, u32 index);
+	void DESERIALIZEu32(u8* src, u32 index, u32* dst);
 
 	void SERIALIZEu64(u64 src, u8* dst, i32 index);
 	void DESERIALIZEu64(u8* src, i32 index, u64* dst);

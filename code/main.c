@@ -14,7 +14,7 @@ int main(int argc, char* argv[])
 	const u32 dt_ms	 = 10;	  // tick duration ms
 	const r32 dt_sec = 0.01f; // tick duration seconds
 
-	Gamestate gamestate_old = GAMESTATE_INIT;
+	//Gamestate gamestate_old = GAMESTATE_INIT;
 	Gamestate gamestate_now = GAMESTATE_INIT;
 	Gamestate gamestate_new = GAMESTATE_INIT;
 
@@ -28,20 +28,28 @@ int main(int argc, char* argv[])
 	i2 default_size = make_i2(ZSDL_INTERNAL_WIDTH, ZSDL_INTERNAL_HEIGHT);
 	Camera* camera = CreateCamera(ZERO_R2, default_size, default_size);
 	Dots* dots = initDots();
-	zGrid* arena = CreateGrid(10, 10, make_i2(32, 32));
-	GenerateArena(arena);
+	i2 arena_screensize = make_i2(512, 480);
+	i2 arena_gridsize = make_i2(13, 15);
+	i2 arena_cellsize = make_i2((i32)((r32)arena_screensize.x/(r32)arena_gridsize.x), (i32)((r32)arena_screensize.y/(r32)arena_gridsize.y));
+	zGrid* arena = CreateGrid(arena_gridsize.x, arena_gridsize.y, arena_cellsize);
 	u32* entities = malloc(sizeof(u32)*ARENA_MAX_ENTITIES);
-	entities[0] = 5 + arena->width * 3;
-	SET8IN64(ARENA_ENTITY_PLAYER, &arena->cell_data[entities[0]], ARENA_BYTEPOS_ENTITY);
-	SET8IN64(ARENA_ORIENTATION_N, &arena->cell_data[entities[0]], ARENA_BYTEPOS_ORIENTATION);
 
 /*vvvvvvvvvvvvvvvvvvvvvvvvvv LOAD ASSETS vvvvvvvvvvvvvvvvvvvvvvvvvv*/
-	LoadTexture(assets, T_PLAYER, viewport->renderer, "assets/player.png");
+	LoadTexture(assets, T_UI_STATIC, viewport->renderer, "assets/t_ui_static.png");
+	LoadTexture(assets, T_CH_PLAYER, viewport->renderer, "assets/t_ch_player.png");
+	LoadTexture(assets, T_CH_ENEMY, viewport->renderer, "assets/t_ch_enemy.png");
+	LoadTexture(assets, T_UI_CLOCK, viewport->renderer, "assets/t_ui_clock_base.png");
+	LoadTexture(assets, T_UI_CLOCK_ARROW, viewport->renderer, "assets/t_ui_clock_arrow.png");
+	LoadTexture(assets, T_UI_NUMBERS, viewport->renderer, "assets/t_ui_numbers.png");
+	LoadTexture(assets, T_UI_LEVEL_BAR, viewport->renderer, "assets/t_ui_level_bar.png");
 /*^^^^^^^^^^^^^^^^^^^^^^^^^^ LOAD ASSETS ^^^^^^^^^^^^^^^^^^^^^^^^^^*/
 
 	// SDL clock is accurate to 10ms, i.e. it counts in 10 ms. maybe switch to more accurate one 
 	u32 current_time	 = SDL_GetTicks(); 
 	u32 time_accumulator = 0;
+
+	SDL_SetRenderTarget(viewport->renderer, viewport->render_layer[ZSDL_RENDERLAYER_UI_STATIC]);
+	SDL_RenderCopy(viewport->renderer, assets->tex[T_UI_STATIC], NULL, NULL);
 
 ///*vvvvvvvvvvvvvvvvvvvvvvvvvv GAMELOOP BEGIN vvvvvvvvvvvvvvvvvvvvvvvvvv*/
 	while (gamestate_now != GAMESTATE_EXIT)
@@ -56,7 +64,7 @@ int main(int argc, char* argv[])
 /* LOGIC UPDATE IN FIXED TIMESTEPS */
 		while (time_accumulator >= dt_ms)
 		{
-			gamestate_old = gamestate_now;
+			//gamestate_old = gamestate_now;
 
 			CollectInput(controller);
 			
@@ -90,6 +98,7 @@ printf("Game exiting state \t%s...\n", GamestateName(gamestate_now));
 	            		case GAMESTATE_PLAY:
 	            		    break;
 	            		case GAMESTATE_LOSE:
+
 	            		    break;
 	            		case GAMESTATE_VICT:
 	            		    break;
@@ -98,7 +107,7 @@ printf("Game exiting state \t%s...\n", GamestateName(gamestate_now));
 	            		case GAMESTATE_EXIT:
 	            		    break;
 	        		}
-					gamestate_old = gamestate_now;
+					//gamestate_old = gamestate_now;
 
 /*	enter and setup next state	*/
 #if PRINT_DBG_GAMESTATE
@@ -109,10 +118,32 @@ printf("Game entering state \t%s...\n", GamestateName(gamestate_new));
 	            		case GAMESTATE_INIT:
 	            		    break;
 	            		case GAMESTATE_MAIN:
+							GenerateArena(arena);
+							memset(entities, 0, sizeof(u32)*ARENA_MAX_ENTITIES); //using 0 as empty entity, would be in wall anyway
+							entities[0] = 5 + arena->width * 3; //set player spawn loc
+							SET8IN64(ARENA_ENTITY_PLAYER, &arena->cell_data[entities[0]], ARENA_BYTEPOS_ENTITY);
+							SET8IN64(ARENA_ORIENTATION_N, &arena->cell_data[entities[0]], ARENA_BYTEPOS_ORIENTATION);
+							RestartGameScore(game);
+							game->t0_main_started = t;
 	            		    break;
 	            		case GAMESTATE_PLAY:
+							SpawnEnemy(arena, entities);
+							SpawnPowerup(arena, entities);
 	            		    break;
 	            		case GAMESTATE_LOSE:
+							game->t0_lost_game = t;
+							if (game->score_full > game->highscores[3])
+							{
+								game->highscores[3] = game->score_full;
+							}
+							for (i32 i = 2; i >= 0; i--)
+							{
+								if (game->score_full > game->highscores[i])
+								{
+									game->highscores[i+1] = game->highscores[i];
+									game->highscores[i] = game->score_full;
+								}
+							}
 	            		    break;
 	            		case GAMESTATE_VICT:
 	            		    break;
@@ -128,7 +159,7 @@ printf("Gamestate change complete.\n");
 	    		} // end if transition allowed
 	    		else //keep current state, but push back and update old state
 	    		{
-					gamestate_old = gamestate_now;
+					//gamestate_old = gamestate_now;
 #if PRINT_DBG_GAMESTATE
 printf("Gamestate change from %s \tto %s was deemed illegal!\n", GamestateName(gamestate_now), GamestateName(gamestate_new));
 #endif
@@ -180,13 +211,13 @@ printf("Gamestate entered state it shouldn't be in: %s \tto %s !\n", GamestateNa
 	            case GAMESTATE_INIT:
 	                break;
 	            case GAMESTATE_MAIN:
-					RenderMain(viewport, arena, controller, assets, camera, dots);
+					RenderMain(viewport, arena, game, entities, controller, assets, camera, dots);
 	                break;
 	            case GAMESTATE_PLAY:
-					RenderPlay(viewport, arena, controller, assets, camera, dots);
+					RenderPlay(viewport, arena, game, entities, controller, assets, camera, dots);
 	                break;
 	            case GAMESTATE_LOSE:
-					RenderLose(viewport, arena, controller, assets, camera, dots);
+					RenderLose(viewport, arena, game, entities, controller, assets, camera, dots);
 	                break;
 	            case GAMESTATE_VICT:
 	                break;

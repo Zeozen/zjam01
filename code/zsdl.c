@@ -193,7 +193,7 @@ void FreeAssets(Assets* assets)
 			assets->sur[i] = NULL;
 		}
 	}
-	for (i32 i = 0; i < ASSETBANK_SURFACES_MAX; i++)
+	for (i32 i = 0; i < ASSETBANK_STRINGS_MAX; i++)
 	{
 		if (assets->str[i] != NULL)
 		{
@@ -432,83 +432,6 @@ void LoadString(Assets* assets, i32 identifier, const char* path)
 
 
 
-void RefreshCursors(Viewport* viewport, Assets* assets)
-{
-	//reblit cursor surface to cursor to scale when window scale changes
-}
-
-void ToggleFullscreen(Viewport* viewport)
-{
-	if (SDL_GetWindowFlags(viewport->window) & SDL_WINDOW_FULLSCREEN)
-		SDL_SetWindowFullscreen(viewport->window, 0);
-	else
-		SDL_SetWindowFullscreen(viewport->window, SDL_WINDOW_FULLSCREEN);
-}
-
-void CleanRenderTargets(Viewport* viewport)
-{
-	SDL_SetRenderDrawColor(viewport->renderer, 0x00, 0x00, 0x00, 0x00);
-    SDL_SetRenderTarget(viewport->renderer, NULL);
-	SDL_RenderClear(viewport->renderer);
-	//clear all layers except ui and fade (last two renderlayers), clear those manutally elsewhere
-	// we do it in reverse so we end up with renderlayer_background to begin next frame with
-	//for  (i32 i = ZSDL_RENDERLAYERS_MAX - 2; i > 0; i--) 
-	//{
-	//	SDL_SetRenderTarget(viewport->renderer, viewport->render_layer[i - 1]);
-	//	SDL_RenderClear(viewport->renderer);
-	//}
-
-	//for now just clear everything
-	for  (i32 i = ZSDL_RENDERLAYERS_MAX - 1; i >= 0; i--) 
-	{
-		SDL_SetRenderTarget(viewport->renderer, viewport->render_layer[i]);
-		SDL_RenderClear(viewport->renderer);
-	}
-}
-
-void FinalizeRenderAndPresent(Viewport* viewport)
-{
-	SDL_SetRenderTarget(viewport->renderer, NULL);
-	SDL_SetRenderDrawBlendMode(viewport->renderer, SDL_BLENDMODE_BLEND);
-	for (i32 i = 0; i < ZSDL_RENDERLAYERS_MAX; i++)
-	{
-		SDL_RenderCopy(viewport->renderer, viewport->render_layer[i], NULL, NULL);
-	}
-    SDL_RenderPresent(viewport->renderer);
-	SDL_SetRenderDrawBlendMode(viewport->renderer, SDL_BLENDMODE_NONE);
-}
-
-u8 ComputePixelScale(Viewport* viewport)
-{
-	i32 screen_width, screen_height;
-	if (SDL_GetWindowFlags(viewport->window) & SDL_WINDOW_FULLSCREEN)
-	{
-		SDL_DisplayMode current;
-		int display_index = SDL_GetWindowDisplayIndex(viewport->window);
-		int success		  = SDL_GetCurrentDisplayMode(display_index, &current);
-
-		if (success != 0)
-		{
-			// In case of error...
-			SDL_Log("Could not get display mode for video display #%d: %s", display_index, SDL_GetError());
-		}
-		else
-		{
-			// On success, print the current display mode.
-			SDL_Log("Display #%d: current display mode is %dx%dpx @ %dhz.", display_index, current.w, current.h,
-					current.refresh_rate);
-			screen_height = current.h;
-			screen_width  = current.w;
-		}
-	}
-	else
-	{
-		SDL_GetWindowSize(viewport->window, &screen_width, &screen_height);
-	}
-	u8 renderscale = (screen_width < screen_height) * (screen_width / ZSDL_INTERNAL_WIDTH) +
-					 (screen_width >= screen_height) * (screen_height / ZSDL_INTERNAL_HEIGHT);
-	return renderscale;
-}
 
 /* this one is kind of a mess, but it deals with mouse scaling related to widescreen and weird monitor sizes, 
 @TODO: improve this function => make it more clear to read and understand, find better solution*/
@@ -865,3 +788,113 @@ r2 CamToPos( i2 cam, Camera* camera)
 }
 
 /*^^^^^^^^^^^^^^^^^^^^^^^^^^ CAMERA ^^^^^^^^^^^^^^^^^^^^^^^^^^*/
+
+/*vvvvvvvvvvvvvvvvvvvvvvvvvv RENDER SUPPORT FUNCTIONS vvvvvvvvvvvvvvvvvvvvvvvvvv*/
+
+void RefreshCursors(Viewport* viewport, Assets* assets)
+{
+	//reblit cursor surface to cursor to scale when window scale changes
+}
+
+void ToggleFullscreen(Viewport* viewport)
+{
+	if (SDL_GetWindowFlags(viewport->window) & SDL_WINDOW_FULLSCREEN)
+		SDL_SetWindowFullscreen(viewport->window, 0);
+	else
+		SDL_SetWindowFullscreen(viewport->window, SDL_WINDOW_FULLSCREEN);
+}
+
+void CleanRenderTargets(Viewport* viewport)
+{
+	SDL_SetRenderDrawColor(viewport->renderer, 0x00, 0x00, 0x00, 0x00);
+    SDL_SetRenderTarget(viewport->renderer, NULL);
+	SDL_RenderClear(viewport->renderer);
+	//clear all layers except ui and fade (last two renderlayers), clear those manutally elsewhere
+	// we do it in reverse so we end up with renderlayer_background to begin next frame with
+	//for  (i32 i = ZSDL_RENDERLAYERS_MAX - 2; i > 0; i--) 
+	//{
+	//	SDL_SetRenderTarget(viewport->renderer, viewport->render_layer[i - 1]);
+	//	SDL_RenderClear(viewport->renderer);
+	//}
+
+	for  (i32 i = ZSDL_RENDERLAYERS_MAX - 1; i >= 0; i--) 
+	{
+		if (i != ZSDL_RENDERLAYER_UI_STATIC)
+		{
+			SDL_SetRenderTarget(viewport->renderer, viewport->render_layer[i]);
+			SDL_RenderClear(viewport->renderer);
+		}
+	}
+}
+
+void FinalizeRenderAndPresent(Viewport* viewport)
+{
+	SDL_SetRenderTarget(viewport->renderer, NULL);
+	SDL_SetRenderDrawBlendMode(viewport->renderer, SDL_BLENDMODE_BLEND);
+	for (i32 i = 0; i < ZSDL_RENDERLAYERS_MAX; i++)
+	{
+		//if (i == ZSDL_RENDERLAYER_POST_PROCESS_A || i == ZSDL_RENDERLAYER_POST_PROCESS_B)
+		//	SDL_SetRenderDrawBlendMode(viewport->renderer, SDL_BLENDMODE_NONE);
+		SDL_RenderCopy(viewport->renderer, viewport->render_layer[i], NULL, NULL);
+	}
+    SDL_RenderPresent(viewport->renderer);
+	SDL_SetRenderDrawBlendMode(viewport->renderer, SDL_BLENDMODE_NONE);
+}
+
+u8 ComputePixelScale(Viewport* viewport)
+{
+	i32 screen_width, screen_height;
+	if (SDL_GetWindowFlags(viewport->window) & SDL_WINDOW_FULLSCREEN)
+	{
+		SDL_DisplayMode current;
+		int display_index = SDL_GetWindowDisplayIndex(viewport->window);
+		int success		  = SDL_GetCurrentDisplayMode(display_index, &current);
+
+		if (success != 0)
+		{
+			// In case of error...
+			SDL_Log("Could not get display mode for video display #%d: %s", display_index, SDL_GetError());
+		}
+		else
+		{
+			// On success, print the current display mode.
+			SDL_Log("Display #%d: current display mode is %dx%dpx @ %dhz.", display_index, current.w, current.h,
+					current.refresh_rate);
+			screen_height = current.h;
+			screen_width  = current.w;
+		}
+	}
+	else
+	{
+		SDL_GetWindowSize(viewport->window, &screen_width, &screen_height);
+	}
+	u8 renderscale = (screen_width < screen_height) * (screen_width / ZSDL_INTERNAL_WIDTH) +
+					 (screen_width >= screen_height) * (screen_height / ZSDL_INTERNAL_HEIGHT);
+	return renderscale;
+}
+
+void DrawNumber(Viewport* viewport, SDL_Texture* texture, u32 number, i2 size_src, i2 size_dst, i2 location, u32 max_digits)
+{
+	SDL_Rect src = {0, 0, size_src.x, size_src.y};
+	SDL_Rect dst = {location.x, location.y, size_dst.x, size_dst.y};
+	u32 digits[max_digits];
+	memset(digits, 0, max_digits*sizeof(u32));
+	i32 k = 0;
+	i32 r = 0;
+	i32 c = 0;
+	while(number!=0)
+	{
+		r = number%10;
+		digits[k] = r;
+		k++;
+		number = number/10;
+		c++;
+	}
+	for (i32 i = 0; i < max_digits; i++)
+	{
+		src.y = size_src.y * digits[i];	
+		dst.x = location.x + (max_digits * size_dst.x) - (size_dst.x * i);
+		SDL_RenderCopy(viewport->renderer, texture, &src, &dst);
+	}
+}
+/*^^^^^^^^^^^^^^^^^^^^^^^^^^ RENDER SUPPORT FUNCTIONS ^^^^^^^^^^^^^^^^^^^^^^^^^^*/

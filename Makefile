@@ -6,7 +6,7 @@ LDFLAGS= $(shell pkg-config --libs-only-other $(pkglibs))
 LDLIBS = $(shell pkg-config --libs-only-L --libs-only-l $(pkglibs)) -lm
 
 
-EXECUTABLE_NAME= zjam_one
+EXECUTABLE_NAME= arena
 
 # Folders
 SRC= ./code/
@@ -27,10 +27,10 @@ ifeq ($(MAKECMDGOALS),debug)
 	LDFLAGS += -mconsole
 endif
 endif
-debug: CFLAGS += -g3 -Og
+debug: CFLAGS += -g -Og
 debug: build
 
-release: CFLAGS += -O2
+release: CFLAGS += -O3
 release: clean
 release: build
 

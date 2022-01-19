@@ -30,3 +30,22 @@ foreløpig plan: ikke dvele for lenge ved hver idé, jo lengre man bruker på en
 bestemte meg for å bruke 3 timer på idégenerering: fra 0900 til 1200, la hodet hvile over lunsj og så velge og videreutvikle et konsept
 	trenger en del tid på detaljering og videreutvikling av konsept tross alt, og tanken er at man vet egentlig ikke hvor godt 
 	en idé fungerer før man får prøvd den ut
+	
+	
+første dag, implementering:
+
+utfordringer ved modellering av brett og spiller, ting tar alltid mer tid enn man tror
+føler nå som dagen er over at jeg brukte for lang tid på idéutvikling og konseptutvikling, og at ved å bruke så lang tid på det gjorde jeg ikke
+konseptet mer finspisset men "dyrere".
+må alltid vurdere med programmering hva som går raskest å begynne å programmere samt hva som krever mindre tid lengre frem i tid pga spaghetti.
+
+
+
+
+etter prototype: iterering
+basically: test test test, tweak variables, se hva som gjør ting morsomt. for raskt? for tregt?
+fix bugs
+
+
+
+
